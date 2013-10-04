@@ -41,11 +41,12 @@
 #include "sensor_msgs/NavSatFix.h"
 #include "nav_msgs/Odometry.h"
 
-#include "enu/enu_ros.h"  // ROS wrapper for conversion functions
+#include "enu/enu.h"  // ROS wrapper for conversion functions
 
-void initialize_datum(const sensor_msgs::NavSatFixConstPtr fix_ptr,
+
+void initialize_datum(const sensor_msgs::NavSatFix& fix,
                       const ros::Publisher& pub_datum,
-                      sensor_msgs::NavSatFix& datum_ptr) {
+                      sensor_msgs::NavSatFix* datum_ptr) {
   ros::NodeHandle pnh("~");
 
   // Local ENU coordinates are with respect to a plane which is
@@ -56,40 +57,66 @@ void initialize_datum(const sensor_msgs::NavSatFixConstPtr fix_ptr,
   if (pnh.hasParam("datum_latitude") &&
       pnh.hasParam("datum_longitude") &&
       pnh.hasParam("datum_altitude")) {
-    pnh.getParam("datum_latitude", datum_ptr.latitude);
-    pnh.getParam("datum_longitude", datum_ptr.longitude);
-    pnh.getParam("datum_altitude", datum_ptr.altitude);
+    pnh.getParam("datum_latitude", datum_ptr->latitude);
+    pnh.getParam("datum_longitude", datum_ptr->longitude);
+    pnh.getParam("datum_altitude", datum_ptr->altitude);
     ROS_INFO("Using datum provided by node parameters.");
   } else {
-    datum_ptr.latitude = fix_ptr->latitude;
-    datum_ptr.longitude = fix_ptr->longitude;
-    datum_ptr.altitude = fix_ptr->altitude;
+    datum_ptr->latitude = fix.latitude;
+    datum_ptr->longitude = fix.longitude;
+    datum_ptr->altitude = fix.altitude;
     ROS_INFO("Using initial position fix as datum.");
   }
-  pub_datum.publish(datum_ptr);
+  pub_datum.publish(*datum_ptr);
 }
 
 
 static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
-                       const ros::Publisher& pub_enu,
+                       const ros::Publisher& pub_odom,
                        const ros::Publisher& pub_datum,
                        const std::string& output_tf_frame,
-                       const double invalid_covariance_value) {
-  static sensor_msgs::NavSatFix datum_ptr;
+                       const double invalid_covariance_value,
+                       const double scale_covariance,
+                       const double lock_altitude) {
+  static sensor_msgs::NavSatFix datum;
   static bool have_datum = false;
 
   if (!have_datum) {
-    initialize_datum(fix_ptr, pub_datum, datum_ptr);
+    initialize_datum(*fix_ptr, pub_datum, &datum);
     have_datum = true;
   }
 
   // Convert the input latlon into north-east-down (NED) via an ECEF
   // transformation and an ECEF-formatted datum point
-  nav_msgs::Odometry odom_msg;
-  llh_to_enu(fix_ptr, datum_ptr, output_tf_frame, invalid_covariance_value,
-             odom_msg);
+  nav_msgs::Odometry odom;
+  enu::fix_to_point(*fix_ptr, datum, &odom.pose.pose.position);
+  if (lock_altitude!=-1) 
+    odom.pose.pose.position.z = lock_altitude;
 
-  pub_enu.publish(odom_msg);
+  odom.header.stamp = fix_ptr->header.stamp;
+  odom.header.frame_id = output_tf_frame;  // Name of output tf frame
+  odom.child_frame_id = fix_ptr->header.frame_id;  // Antenna location
+
+  //Initialize orientation to zero (GPS orientation is N/A)
+  odom.pose.pose.orientation.x = 0;
+  odom.pose.pose.orientation.y = 0;
+  odom.pose.pose.orientation.z = 0;
+  odom.pose.pose.orientation.w = 1;
+
+  // We only need to populate the diagonals of the covariance matrix; the
+  // rest initialize to zero automatically, which is correct as the
+  // dimensions of the state are independent.
+  odom.pose.covariance[0] = fix_ptr->position_covariance[0]*scale_covariance;
+  odom.pose.covariance[7] = fix_ptr->position_covariance[4]*scale_covariance;
+  odom.pose.covariance[14] = fix_ptr->position_covariance[8]*scale_covariance;
+
+  // Do not use orientation dimensions from GPS.
+  // (-1 is an invalid covariance and standard ROS practice to set as invalid.)
+  odom.pose.covariance[21] = invalid_covariance_value;
+  odom.pose.covariance[28] = invalid_covariance_value;
+  odom.pose.covariance[35] = invalid_covariance_value;
+
+  pub_odom.publish(odom);
 }
 
 
@@ -101,14 +128,18 @@ int main(int argc, char **argv) {
   std::string output_tf_frame;
   pnh.param<std::string>("output_frame_id", output_tf_frame, "map");
   double invalid_covariance_value;
+  double scale_covariance;
+  double lock_altitude;
   pnh.param<double>("invalid_covariance_value", invalid_covariance_value, -1.0);  // -1 is ROS convention.  1e6 is robot_pose_ekf convention
+  pnh.param<double>("scale_covariance", scale_covariance,1.0);
+  pnh.param<double>("lock_altitude", lock_altitude, -1.0); //if -1 then use ENU altitude, otherwise lock the altitude at the provided value
 
   // Initialize publishers, and pass them into the handler for
   // the subscriber.
-  ros::Publisher pub_enu = n.advertise<nav_msgs::Odometry>("enu", 5);
+  ros::Publisher pub_odom = n.advertise<nav_msgs::Odometry>("enu", 5);
   ros::Publisher pub_datum = n.advertise<sensor_msgs::NavSatFix>("enu_datum", 5, true);
   ros::Subscriber sub = n.subscribe<sensor_msgs::NavSatFix>("fix", 5,
-      boost::bind(handle_fix, _1, pub_enu, pub_datum, output_tf_frame, invalid_covariance_value));
+      boost::bind(handle_fix, _1, pub_odom, pub_datum, output_tf_frame, invalid_covariance_value,scale_covariance, lock_altitude));
 
   ros::spin();
   return 0;

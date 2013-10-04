@@ -1,3 +1,22 @@
+## enu - 1.1.0-0
+
+User `administrator@husky-vm` released the packages in the `enu` repository by running `/home/administrator/husky_ws/src/bloom_easy/scripts/release` on `Fri, 04 Oct 2013 03:32:31 -0000`
+
+The `enu` package was released.
+
+Version of package(s) in repository `enu`:
+- rosdistro version: `1.0.3-0`
+- old version: `1.0.3-0`
+- new version: `1.1.0-0`
+
+Versions of tools used:
+- bloom version: `0.4.4`
+- catkin_pkg version: `0.1.19`
+- rosdep version: `0.10.21`
+- rosdistro version: `0.2.14`
+- vcstools version: `0.1.31`
+
+
 ## enu - 1.0.3-0
 
 User `mikepurvis@testbox` released the packages in the `enu` repository by running `/usr/bin/bloom-release --track hydro --rosdistro hydro enu` on `Sat, 07 Sep 2013 14:44:08 -0000`

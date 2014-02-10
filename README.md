@@ -1,3 +1,22 @@
+## enu - 1.2.1-0
+
+User `administrator@vm-precise` released the packages in the `enu` repository by running `/usr/bin/bloom-release enu --rosdistro hydro --track hydro` on `Mon, 10 Feb 2014 14:46:45 -0000`
+
+The `enu` package was released.
+
+Version of package(s) in repository `enu`:
+- rosdistro version: `1.1.0-0`
+- old version: `1.2.0-0`
+- new version: `1.2.1-0`
+
+Versions of tools used:
+- bloom version: `0.4.9`
+- catkin_pkg version: `0.1.25`
+- rosdep version: `0.10.25`
+- rosdistro version: `0.3.0`
+- vcstools version: `0.1.33`
+
+
 ## enu - 1.2.0-0
 
 User `administrator@vm-precise` released the packages in the `enu` repository by running `/usr/bin/bloom-release enu --rosdistro hydro --track hydro` on `Mon, 10 Feb 2014 13:58:59 -0000`

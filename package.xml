@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>enu</name>
-  <version>1.2.1</version>
+  <version>1.2.2</version>
   <description>enu</description>
   <maintainer email="mpurvis@clearpathrobotics.com">Mike Purvis</maintainer>
   <license>BSD</license>
@@ -27,7 +27,7 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
-  <run_depend version_gte="0.0.4">swiftnav</run_depend>
+  <run_depend version_gte="0.8.0">swiftnav</run_depend>
 
   <export>
   </export>

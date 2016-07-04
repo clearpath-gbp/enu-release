@@ -1,0 +1,12 @@
+Source: ros-indigo-enu
+Section: misc
+Priority: extra
+Maintainer: Mike Purvis <mpurvis@clearpathrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin, ros-indigo-geometry-msgs, ros-indigo-nav-msgs, ros-indigo-rosconsole, ros-indigo-roscpp, ros-indigo-sensor-msgs, ros-indigo-swiftnav
+Homepage: http://ros.org/wiki/enu
+Standards-Version: 3.9.2
+
+Package: ros-indigo-enu
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-geometry-msgs, ros-indigo-nav-msgs, ros-indigo-rosconsole, ros-indigo-roscpp, ros-indigo-sensor-msgs, ros-indigo-swiftnav (>= 0.8.0)
+Description: enu

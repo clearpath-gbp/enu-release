@@ -1,3 +1,26 @@
+## enu (indigo) - 1.2.2-0
+
+The packages in the `enu` repository were released into the `indigo` distro by running `/usr/bin/bloom-release -t indigo -r indigo enu --new-track` on `Mon, 04 Jul 2016 22:47:18 -0000`
+
+The `enu` package was released.
+
+Version of package(s) in repository `enu`:
+
+- upstream repository: https://github.com/clearpathrobotics/enu.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `null`
+- new version: `1.2.2-0`
+
+Versions of tools used:
+
+- bloom version: `0.5.21`
+- catkin_pkg version: `0.2.10`
+- rosdep version: `0.11.5`
+- rosdistro version: `0.4.7`
+- vcstools version: `0.1.38`
+
+
 ## enu (hydro) - 1.2.2-0
 
 The packages in the `enu` repository were released into the `hydro` distro by running `/usr/bin/bloom-release -r hydro -t hydro enu` on `Wed, 07 May 2014 16:18:10 -0000`
